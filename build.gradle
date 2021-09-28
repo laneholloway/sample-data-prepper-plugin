@@ -1,0 +1,81 @@
+/*
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  The OpenSearch Contributors require contributions made to
+ *  this file be licensed under the Apache-2.0 license or a
+ *  compatible open source license.
+ *
+ *  Modifications Copyright OpenSearch Contributors. See
+ *  GitHub history for details.
+ */
+plugins {
+    id 'java'
+    id "com.diffplug.spotless" version "5.12.4"
+    id 'jacoco'
+}
+
+apply plugin: 'com.diffplug.spotless'
+
+group = 'com.amazon'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+spotless {
+    format 'markdown', {
+        target '*.md'
+        // TODO: enrich format rules
+        endWithNewline()
+    }
+    format 'misc', {
+        target '.gitignore', '*.yml', '*.yaml'
+        // TODO: enrich format rules
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    java {
+        // TODO: enrich format rules
+        removeUnusedImports()
+    }
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.7.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.vintage:junit-vintage-engine'
+    testImplementation "org.mockito:mockito-core:3.11.2"
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.11.2'
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/reports/jacocoHtml")
+    }
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+build.dependsOn test
+
+
+task allDeps(type: DependencyReportTask) {}
+
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.65 //TODO increase this to 0.75
+            }
+        }
+    }
+}
+check.dependsOn jacocoTestCoverageVerification
