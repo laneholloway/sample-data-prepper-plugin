@@ -19,6 +19,7 @@ apply plugin: 'com.diffplug.spotless'
 group = 'com.amazon'
 
 repositories {
+    mavenLocal() //here as a hack until Data Prepper sources are placed into maven central.
     mavenCentral()
     maven { url 'https://jitpack.io' }
 }
@@ -42,6 +43,7 @@ spotless {
 }
 
 dependencies {
+    implementation 'com.amazon:data-prepper-api:1.0.0'
     testImplementation platform('org.junit:junit-bom:5.7.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.vintage:junit-vintage-engine'
@@ -58,15 +60,9 @@ jacocoTestReport {
     }
 }
 
-test {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport // report is always generated after tests run
-}
 build.dependsOn test
 
-
 task allDeps(type: DependencyReportTask) {}
-
 
 jacocoTestCoverageVerification {
     dependsOn jacocoTestReport
@@ -79,3 +75,8 @@ jacocoTestCoverageVerification {
     }
 }
 check.dependsOn jacocoTestCoverageVerification
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
